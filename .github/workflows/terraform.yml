@@ -46,22 +46,16 @@ jobs:
     - name: Terraform Plan
       run: terraform plan
 
-      # On push to main, build or change infrastructure according to Terraform configuration files
-#    - name: Terraform Apply
-#      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-#      run: terraform apply -auto-approve
+    # On push to main, build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve
 
 
     # Create .zip with tfstate files and Copy to s3 bucket
-#    - name: Create ZIP with tfstate Files
-#      run: zip -r ${{ env.STATE_FILE_NAME }} ./*tfstate.*
-#      needs: 
+    - name: Create ZIP with tfstate Files
+      run: zip -r ${{ env.STATE_FILE_NAME }} ./terraform.tfstate.*
+     
 
-#    - name: Copy tfstate Files to s3
-#      run: aws s3 cp ${{ env.STATE_FILE_NAME }} s3://${{ env.S3_BACKET_NAME }}/
-
-
-      # For readme
-      # Status of Last Deployment: <br>
-      #<img src="https://github.com/bbkosten/test_page/workflows/Create_infra_AWS/badge.svg?branch=master">
-      #<br>
+    - name: Copy tfstate Files to s3
+      run: aws s3 cp ${{ env.STATE_FILE_NAME }} s3://${{ env.S3_BACKET_NAME }}/
