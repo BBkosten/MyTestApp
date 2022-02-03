@@ -41,7 +41,7 @@ jobs:
       run: aws s3 cp s3://bucket-for-tfstate/tfstate_files_246c86b08ecc3ad5bf2121a38b1e63c13ed3bfeb.zip ./
         
     - name: unzip
-      run: unzip tfstate_files_246c86b08ecc3ad5bf2121a38b1e63c13ed3bfeb.zip ./
+      run: unzip tfstate_files_246c86b08ecc3ad5bf2121a38b1e63c13ed3bfeb.zip
 
 
     - name: Terraform destroy
