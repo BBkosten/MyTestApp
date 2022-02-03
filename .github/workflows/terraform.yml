@@ -11,10 +11,9 @@ on:
     - main
 
 jobs:
-  terraform:
-    name: 'Terraform'
+   killAll:
+    name: 'Terraform_destroy'
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
     # Checkout the repository to the GitHub Actions runner
@@ -32,30 +31,17 @@ jobs:
     # Install the latest version of Terraform CLI 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
-
+      
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       id  : init
       run: terraform init
-
-    - name: Terraform Validate
-      id: validate
-      run: terraform validate
-
-    # Generates an execution plan for Terraform
-    - name: Terraform Plan
-      run: terraform plan
-
-    # On push to main, build or change infrastructure according to Terraform configuration files
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: terraform apply -auto-approve
+      
+    - name: Copy Github Action from the core rep with the AWS CLI
+      run: |
+        aws s3 cp s3://${{ env.S3_BACKET_NAME }} ./
+        unzip ${{ env.STATE_FILE_NAME }} ./
 
 
-    # Create .zip with tfstate files and Copy to s3 bucket
-    - name: Create ZIP with tfstate Files
-      run: zip -r ${{ env.STATE_FILE_NAME }} ./ -x "*.git*" "*.tf" "*.sh"
-     
-
-    - name: Copy tfstate Files to s3
-      run: aws s3 cp ${{ env.STATE_FILE_NAME }} s3://${{ env.S3_BACKET_NAME }}/
+    - name: Terraform destroy
+      run: terraform destroy -auto-approve
