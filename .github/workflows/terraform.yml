@@ -1,0 +1,71 @@
+name: Create_infra_AWS
+env:
+  S3_BACKET_NAME      : "bucket-for-tfstate"
+  APP_NAME            : "TestWebPage"
+  STATE_FILE_NAME     : "tfstate_files_${{ github.sha }}.zip"
+  AWS_REGION_NAME     : "eu-central-1"
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Git Clone our repo
+      uses: actions/checkout@v2
+
+
+    - name: AWS configure
+      uses: aws-actions/configure-aws-aredentials@v1
+      with:
+        aws-access-key-id     : ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key : ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region            : $ {{ env.AWS_REGION_NAME }}
+
+    # Install the latest version of Terraform CLI 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      id  : init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan
+
+      # On push to main, build or change infrastructure according to Terraform configuration files
+#    - name: Terraform Apply
+#      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#      run: terraform apply -auto-approve
+
+
+    # Create .zip with tfstate files and Copy to s3 bucket
+#    - name: Create ZIP with tfstate Files
+#      run: zip -r ${{ env.STATE_FILE_NAME }} ./*tfstate.*
+#      needs: 
+
+#    - name: Copy tfstate Files to s3
+#      run: aws s3 cp ${{ env.STATE_FILE_NAME }} s3://${{ env.S3_BACKET_NAME }}/
+
+
+      # For readme
+      # Status of Last Deployment: <br>
+      #<img src="https://github.com/bbkosten/test_page/workflows/Create_infra_AWS/badge.svg?branch=master">
+      #<br>
