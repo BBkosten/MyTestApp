@@ -41,7 +41,7 @@ jobs:
       run: KEY=`aws s3 ls ${{ env.S3_BACKET_NAME }} | sort | tail -n 1 | awk '{print $4}'` && aws s3 cp s3://${{ env.S3_BACKET_NAME }}/$KEY .
         
     - name: Copy Github Action from the core rep with the AWS CLI
-      run: unzip \*.zip .
+      run: unzip \*.zip
 
 
     #- name: Terraform destroy
