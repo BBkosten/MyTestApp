@@ -38,11 +38,10 @@ jobs:
       run: terraform init
       
     - name: Copy Github Action from the core rep with the AWS CLI
-      run: aws s3 cp s3://bucket-for-tfstate/tfstate_files_246c86b08ecc3ad5bf2121a38b1e63c13ed3bfeb.zip ./
+      run: KEY=`aws s3 ls ${{ env.S3_BACKET_NAME }} | sort | tail -n 1 | awk '{print $4}'` && aws s3 cp s3://${{ env.S3_BACKET_NAME }}/$KEY . | uzip $KEY .
         
-    - name: unzip
-      run: unzip tfstate_files_246c86b08ecc3ad5bf2121a38b1e63c13ed3bfeb.zip -d . terraform.tfstate
 
 
-    - name: Terraform destroy
-      run: terraform destroy -auto-approve
+
+    #- name: Terraform destroy
+    #  run: terraform destroy -auto-approve
