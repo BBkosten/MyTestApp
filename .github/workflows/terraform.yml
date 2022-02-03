@@ -54,7 +54,7 @@ jobs:
 
     # Create .zip with tfstate files and Copy to s3 bucket
     - name: Create ZIP with tfstate Files
-      run: zip -r ${{ env.STATE_FILE_NAME }} ./terraform.tfstate.*
+      run: zip -r ${{ env.STATE_FILE_NAME }} ./ -x "*.git*" "*.tf" "*.sh"
      
 
     - name: Copy tfstate Files to s3
