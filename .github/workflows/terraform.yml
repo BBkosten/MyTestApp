@@ -1,7 +1,6 @@
 name: Create_infra_AWS
 env:
   S3_BACKET_NAME      : "bucket-for-tfstate"
-  APP_NAME            : "TestWebPage"
   STATE_FILE_NAME     : "tfstate_files_${{ github.sha }}.zip"
   AWS_REGION_NAME     : "eu-central-1"
 
@@ -11,9 +10,10 @@ on:
     - main
 
 jobs:
-   killAll:
-    name: 'Terraform_destroy'
+  terraform:
+    name: 'Terraform_create'
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
     # Checkout the repository to the GitHub Actions runner
@@ -28,21 +28,33 @@ jobs:
         aws-secret-access-key : ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region            : ${{ env.AWS_REGION_NAME }}
 
-    # Install the latest version of Terraform CLI 
+    # Install the latest version of Terraform CLI
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
-      
+
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       id  : init
       run: terraform init
-      
-    - name: Copy Github Action from the core rep with the AWS CLI
-      run: KEY=`aws s3 ls ${{ env.S3_BACKET_NAME }} | sort | tail -n 1 | awk '{print $4}'` && aws s3 cp s3://${{ env.S3_BACKET_NAME }}/$KEY .
-        
-    - name: Copy Github Action from the core rep with the AWS CLI
-      run: unzip \*.zip -d . terraform.tfstate
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan
+
+    # On push to main, build or change infrastructure according to Terraform configuration files
+    #- name: Terraform Apply
+    #  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    #  run: terraform apply -auto-approve
 
 
-    #- name: Terraform destroy
-    #  run: terraform destroy -auto-approve
+    # Create .zip with tfstate files and Copy to s3 bucket
+    #- name: Create ZIP with tfstate Files
+    #  run: zip -r ${{ env.STATE_FILE_NAME }} ./ -x "*.git*" "*.tf" "*.sh"
+
+
+    #- name: Copy tfstate Files to s3
+    #  run: aws s3 cp ${{ env.STATE_FILE_NAME }} s3://${{ env.S3_BACKET_NAME }}/
